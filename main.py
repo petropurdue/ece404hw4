@@ -249,6 +249,22 @@ if __name__ == '__main__':
         SBBS.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
     print(SBBS)
 
+    #rowwise permutation
+    county = 1
+    temparr = []
+    RSarr = []
+    for i in range(1,len(SBBS)+1):      #for all elements in the array
+        if (county == 16):              #split it into chunks of 16
+            coolarr = []
+            for m in range(4):              #split the chunks of 16 into 4x4 arrays
+                groovyarr = []
+                for n in range(4):
+                    groovyarr.append(SBBS[4*m+n])
+                coolarr.append(groovyarr)
+            county=0 #make sure its 0 because its about to go up to 1 in the next line
+            RSarr.append(rowshift(coolarr))
+        county+=1
+
 
     # single byte based substitution
     # rowwise permutation
