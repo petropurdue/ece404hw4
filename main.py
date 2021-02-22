@@ -216,6 +216,33 @@ def rowshift(inputarr):
     returnarray = [temp1,temp2,temp3,temp4]
     return returnarray
 
+
+def colshift(inputarr):
+    multarr = [2,3,1,1,1,2,3,1,1,1,2,3,3,1,1,2]
+    print(len(multarr))
+
+    retarr = []
+    for i in range(16):
+        # print(multarr[4*row+col],inputarr[4*row+col],"^") #OLD and EFFICIENT solution (INCOMPLETE because I am LAZY)
+        row = i//4
+        col = i % 4
+        if (i<4): #if in first row
+            retarr.append((multarr[i] * inputarr[i+4]) ^ (multarr[i]*inputarr[i+4]) ^ inputarr[i+8] ^ inputarr[i+12])
+        if ((4<i) & (i < 8)):
+            retarr.append(inputarr[i-4] ^ (2*inputarr[i]) ^ (3 * inputarr[i+4]) ^ inputarr[i+8])
+        if ((8 < i) & (i < 12)):
+            retarr.append((inputarr[i - 8]) ^ inputarr[i - 4] ^ (2 * inputarr[i]) ^ (3 * inputarr[i + 4]))
+        if ((12 < i) & (i < 16)):
+            retarr.append((3*inputarr[i - 12]) ^ inputarr[i - 8] ^ (inputarr[i-4]) ^ (2 * inputarr[i]))
+    return retarr #i named return arr retarr, oh what a timesaver I am
+
+def decompress(beginarray):
+    temp = []
+    for i in beginarray:
+        for j in i:
+            temp.append(j)
+    return temp
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     readsize = 128
@@ -247,24 +274,31 @@ if __name__ == '__main__':
     print(len(mbv))
     for i in range(0,len(mbv),8):
         SBBS.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
-    print(SBBS)
+    print("SBBS:",SBBS)
 
     #rowwise permutation
     county = 1
     temparr = []
     RSarr = []
-    for i in range(1,len(SBBS)+1):      #for all elements in the array
-        if (county == 16):              #split it into chunks of 16
-            coolarr = []
-            for m in range(4):              #split the chunks of 16 into 4x4 arrays
-                groovyarr = []
-                for n in range(4):
-                    groovyarr.append(SBBS[4*m+n])
+    sixteens = 0
+    coolarr = []
+    for i in range(1,len(SBBS)+1):
+        if (county == 16):
+            itno = sixteens * 16
+            for j in range(4):
+                #print(4*j+itno,4*j+itno+4)
+                print(itno,j)
+                groovyarr = SBBS[(4*j+itno):(4*j+itno+4)]
                 coolarr.append(groovyarr)
             county=0 #make sure its 0 because its about to go up to 1 in the next line
+            sixteens+=1
             RSarr.append(rowshift(coolarr))
         county+=1
+    print("RS done!")
+    RSarr = decompress(RSarr)
 
+    #columnwise mixing
+    CSarr = colshift(RSarr)
 
     # single byte based substitution
     # rowwise permutation
