@@ -19,6 +19,13 @@ def colshift(inputarr):
             retarr.append((3*inputarr[i - 12]) ^ inputarr[i - 8] ^ (inputarr[i-4]) ^ (2 * inputarr[i]))
     return retarr #i named return arr retarr, oh what a timesaver I am
 
+def decompress(beginarray):
+    temp = []
+    for i in beginarray:
+        for j in i:
+            temp.append(j)
+    print(temp)
+    return temp
 
 if __name__ == '__main__':
     print("test")
@@ -31,3 +38,6 @@ if __name__ == '__main__':
     sixteensalad = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
     endarray = colshift(sixteensalad)
     print(endarray)
+
+    beginarray = decompress(beginarray)
+    print(beginarray)

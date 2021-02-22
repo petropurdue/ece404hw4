@@ -185,7 +185,7 @@ def rowshift(inputarr):
             temparr = inputarr[j]
             rowarr.append(temparr[k])
         start.append(rowarr)
-    print(start)
+    #print(start)
 
     #do nothing to row one
     temp1 = start[0]
@@ -240,7 +240,11 @@ def decompress(beginarray):
     temp = []
     for i in beginarray:
         for j in i:
-            temp.append(j)
+            if (isinstance(j,list)):
+                for k in j:
+                    temp.append(k)
+            else:
+                temp.append(j)
     return temp
 
 # Press the green button in the gutter to run the script.
@@ -287,7 +291,7 @@ if __name__ == '__main__':
             itno = sixteens * 16
             for j in range(4):
                 #print(4*j+itno,4*j+itno+4)
-                print(itno,j)
+                #print(itno,j)
                 groovyarr = SBBS[(4*j+itno):(4*j+itno+4)]
                 coolarr.append(groovyarr)
             county=0 #make sure its 0 because its about to go up to 1 in the next line
@@ -295,11 +299,23 @@ if __name__ == '__main__':
             RSarr.append(rowshift(coolarr))
         county+=1
     print("RS done!")
+    print(RSarr)
+    print("b4")
     RSarr = decompress(RSarr)
+    print("after",RSarr)
 
     #columnwise mixing
-    CSarr = colshift(RSarr)
-
+    CSarr = []
+    county = 1
+    sixteens = 0
+    for i in range(1,len(RSarr)+1):
+        if (county == 16):
+            #temparr = colshift(RSarr[(sixteens*i):(i*sixteens+16)])
+            #print(RSarr[(sixteens*16+i):(i+sixteens*16)])
+            sixteens+=1
+            county = 0  # make sure its 0 because its about to go up to 1 in the next line
+        county+=1
+        CSarr.append(temparr)
     # single byte based substitution
     # rowwise permutation
     # columnwise mixing
