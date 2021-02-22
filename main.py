@@ -46,7 +46,6 @@ def gen_key_schedule_192(key_bv):
             key_words[i] = key_words[i - 6] ^ key_words[i - 1]
     return key_words
 
-
 def gen_key_schedule_256(key_bv):
     byte_sub_table = gen_subbytes_table()
     #  We need 60 keywords (each keyword consists of 32 bits) in the key schedule for
@@ -175,11 +174,7 @@ def genkeyschedule(keysize):
         print(round_key)
 
 def sreplace(subBytesTable,row,column):
-    print("!")
-    print(row,column)
-
-    #print(row.get_bitvector_in_ascii(),column.get_bitvector_in_ascii())
-    return subBytesTable[row*16+column]
+    return subBytesTable[row.int_val()*16+column.int_val()]
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -192,16 +187,12 @@ if __name__ == '__main__':
     keysize, key_bv = get_key_from_user(sys.argv[3])
     print("Got key!")
 
-    genkeyschedule(keysize)
+    #genkeyschedule(keysize)
     AES_modulus = BitVector(bitstring='100011011')
     subBytesTable = []  # for encryption
     invSubBytesTable = []  # for decryption
-    print(":)")
     genTables()
-    #print("SBox for Encryption:",subBytesTable)
-    #print("SBox for Decryption:",invSubBytesTable)
 
-    #print(len(subBytesTable))
     mptr = open(sys.argv[2])
     mtxt = mptr.readline()
     mbv = BitVector(textstring=mtxt)
@@ -211,13 +202,9 @@ if __name__ == '__main__':
     rowshift = []
     print(mbv)
     print(len(mbv))
-    #for i in range(0,len(mbv),8):
-        #rowshift.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
-        #print(mbv[i:i+4],mbv[i+4:i+8])
-
-    #0000-1111 = 0-15
-    #newval.append(intVal=114)
-    #114,132,45,88,114,132,45,88,114,132,45,88,114,132,45,88
+    for i in range(0,len(mbv),8):
+        rowshift.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
+    print(rowshift)
 
 
     # single byte based substitution
