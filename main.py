@@ -176,35 +176,78 @@ def genkeyschedule(keysize):
 def sreplace(subBytesTable,row,column):
     return subBytesTable[row.int_val()*16+column.int_val()]
 
+def rowshift(inputarr):
+    #convert the 4 columns into 4 rows
+    start = []
+    for k in range(4):
+        rowarr = []
+        for j in range(4):
+            temparr = inputarr[j]
+            rowarr.append(temparr[k])
+        start.append(rowarr)
+    print(start)
+
+    #do nothing to row one
+    temp1 = start[0]
+
+    #shift row 2 left 1
+    temp2 = []
+    interestrow = start[1]
+    for i in range(1,4):
+        temp2.append(interestrow[i])
+    temp2.append(interestrow[0])
+
+    #shift row 2 right two
+    temp3 = []
+    interestrow = start[2]
+    for i in range(2):
+        temp3.append(interestrow[i+2])
+    for i in range(2):
+        temp3.append(interestrow[i])
+
+    # shift row 3 right one
+    temp4 = []
+    interestrow = start[3]
+    temp4.append(interestrow[3])
+    for i in range(3):
+        temp4.append(interestrow[i])
+
+    #append the newly made rows
+    returnarray = [temp1,temp2,temp3,temp4]
+    return returnarray
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     readsize = 128
     bitsize = 8
 
-    print(sys.argv[1], sys.argv[2], sys.argv[3])
+    print(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
+    #Get key from keyfile
     print("Getting key...")
     keysize, key_bv = get_key_from_user(sys.argv[3])
     print("Got key!")
 
+    #Generate key schedule + S table
     #genkeyschedule(keysize)
     AES_modulus = BitVector(bitstring='100011011')
     subBytesTable = []  # for encryption
     invSubBytesTable = []  # for decryption
     genTables()
 
+    #Get file data
     mptr = open(sys.argv[2])
     mtxt = mptr.readline()
     mbv = BitVector(textstring=mtxt)
     mbv.pad_from_right(len(mbv)%8)
 
-
-    rowshift = []
+    #Single byte based Substitution
+    SBBS = []
     print(mbv)
     print(len(mbv))
     for i in range(0,len(mbv),8):
-        rowshift.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
-    print(rowshift)
+        SBBS.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
+    print(SBBS)
 
 
     # single byte based substitution
