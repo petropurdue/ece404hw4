@@ -158,8 +158,8 @@ def genkeyschedule(keysize):
         keyword_in_ints = []
         for i in range(4):
             keyword_in_ints.append(word[i * 8:i * 8 + 8].intValue())
-        if word_index % 4 == 0: print("\n")
-        print("aword %d:  %s" % (word_index, str(keyword_in_ints)))
+        #if word_index % 4 == 0: print("\n")
+        #print("aword %d:  %s" % (word_index, str(keyword_in_ints)))
         key_schedule.append(keyword_in_ints)
     num_rounds = None
     if keysize == 128: num_rounds = 10
@@ -169,14 +169,19 @@ def genkeyschedule(keysize):
     for i in range(num_rounds + 1):
         round_keys[i] = (key_words[i * 4] + key_words[i * 4 + 1] + key_words[i * 4 + 2] +
                          key_words[i * 4 + 3]).get_bitvector_in_hex()
-    print("\n\nRound keys in hex (first key for input block):\n")
-    for round_key in round_keys:
-        print(round_key)
+    #print("\n\nRound keys in hex (first key for input block):\n")
+    return round_keys
+    #for round_key in round_keys:
+    #    print(round_key)
 
-def sreplace(subBytesTable,row,column):
-    return subBytesTable[row.int_val()*16+column.int_val()]
+def sreplace(subBytesTable,bitval):
+    #print(int(row),int(column))
+    #print(row.int_val()*16+column.int_val())
+    #print(subBytesTable[row.int_val()*16+column.int_val()])
+    return subBytesTable[bitval.int_val()]
 
 def rowshift(inputarr):
+    print("inparr:",inputarr)
     #convert the 4 columns into 4 rows
     start = []
     for k in range(4):
@@ -216,35 +221,36 @@ def rowshift(inputarr):
     returnarray = [temp1,temp2,temp3,temp4]
     return returnarray
 
-
 def colshift(inputarr):
     multarr = [2,3,1,1,1,2,3,1,1,1,2,3,3,1,1,2]
     #print(len(inputarr))
     #print("columnshift received",inputarr)
     retarr = []
+    print("ARR:",inputarr)
     for i in range(16):
         # print(multarr[4*row+col],inputarr[4*row+col],"^") #OLD and EFFICIENT solution (INCOMPLETE because I am LAZY)
-        row = i//4
-        col = i % 4
         if (i<4): #if in first row
             retarr.append((multarr[i] * inputarr[i+4]) ^ (multarr[i]*inputarr[i+4]) ^ inputarr[i+8] ^ inputarr[i+12])
-        if ((4<i) & (i < 8)):
+        if ((4<=i) & (i < 8)):
             retarr.append(inputarr[i-4] ^ (2*inputarr[i]) ^ (3 * inputarr[i+4]) ^ inputarr[i+8])
-        if ((8 < i) & (i < 12)):
+        if ((8 <= i) & (i < 12)):
             retarr.append((inputarr[i - 8]) ^ inputarr[i - 4] ^ (2 * inputarr[i]) ^ (3 * inputarr[i + 4]))
-        if ((12 < i) & (i < 16)):
+        if ((12 <= i) & (i < 16)):
             retarr.append((3*inputarr[i - 12]) ^ inputarr[i - 8] ^ (inputarr[i-4]) ^ (2 * inputarr[i]))
     return retarr #i named return arr retarr, oh what a timesaver I am
 
-def decompress(beginarray):
+def decompress(beginarray): #this incredible function can decompress up to 3 deep nested lists! Wow!!!
     temp = []
     for i in beginarray:
-        for j in i:
-            if (isinstance(j,list)):
-                for k in j:
-                    temp.append(k)
-            else:
-                temp.append(j)
+        if (isinstance(i, list)):
+            for j in i:
+                if (isinstance(j,list)):
+                    for k in j:
+                        temp.append(k)
+                else:
+                    temp.append(j)
+        else:
+            temp.append(i)
     return temp
 
 # Press the green button in the gutter to run the script.
@@ -260,7 +266,7 @@ if __name__ == '__main__':
     print("Got key!")
 
     #Generate key schedule + S table
-    #genkeyschedule(keysize)
+    roundkey = genkeyschedule(keysize)
     AES_modulus = BitVector(bitstring='100011011')
     subBytesTable = []  # for encryption
     invSubBytesTable = []  # for decryption
@@ -272,18 +278,24 @@ if __name__ == '__main__':
     mbv = BitVector(textstring=mtxt)
     mbv.pad_from_right(len(mbv)%8)
 
+    roundno = -1
+
+    #LOOP HERE BOIIIIIIIII
+    roundno += 1
+
     #Single byte based Substitution
     SBBS = []
-    print(mbv)
-    print(len(mbv))
+    #print(mbv)
+    #print(len(mbv))
     for i in range(0,len(mbv),8):
-        SBBS.append(sreplace(subBytesTable,mbv[i:i+4],mbv[i+4:i+8]))
-    print("SBBS:",SBBS)
+        SBBS.append(sreplace(subBytesTable,mbv[i:i+8]))
+    #print("SBBS:",SBBS)
 
     #rowwise permutation
     county = 1
     temparr = []
     RSarr = []
+    sixteens = 0
     sixteens = 0
     coolarr = []
     for i in range(1,len(SBBS)+1):
@@ -297,24 +309,48 @@ if __name__ == '__main__':
             county=0 #make sure its 0 because its about to go up to 1 in the next line
             sixteens+=1
             RSarr.append(rowshift(coolarr))
+            coolarr = []
         county+=1
     RSarr = decompress(RSarr)
     print("RS  :",RSarr)
 
     #columnwise mixing
     CSarr = []
-    print(len(RSarr))
+    #print(len(RSarr))
     for i in range(0,len(RSarr),16):
         sendarr = RSarr[(i):(i+16)]
         if (len(sendarr) == 16):
-            temparr = colshift(sendarr)
+            #print("sendarr:",len(sendarr))
+            temparr = colshift(sendarr) #sending an array of integers
+            #print(len(temparr))
             CSarr.append(temparr)
         else:
             print("nice try, bucko. Unfortunately for you,",sendarr,"just ain't cuttin' the bill!")
             temparr = []
         sixteens+=1
+    #decompress(CSarr)
+    print("CSarr:",CSarr)
+
+    #print(roundkey[0],roundkey[1])
+    #print(roundkey)
+
+    #xor with round key
+    print(roundkey[0])
+    '''
+    mbv = []
+    for i in range(len(CSarr)):
+        temparr = decompress(CSarr[i])
+
+        bvtemparr = []
+        for allah in temparr: #allah because why not
+             bvtemparr = bvtemparr + (BitVector(intVal=allah, size=8))
+
+        CSarr[i] = temparr ^ roundkey[roundno]
     decompress(CSarr)
-    print("CSARR:",CSarr)
+
+    for i in CSarr:
+        mbv = mbv + (BitVector(intVal=i, size=8))
+    '''
 
     # single byte based substitution
     # rowwise permutation
