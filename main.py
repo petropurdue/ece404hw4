@@ -219,8 +219,8 @@ def rowshift(inputarr):
 
 def colshift(inputarr):
     multarr = [2,3,1,1,1,2,3,1,1,1,2,3,3,1,1,2]
-    print(len(multarr))
-
+    #print(len(inputarr))
+    #print("columnshift received",inputarr)
     retarr = []
     for i in range(16):
         # print(multarr[4*row+col],inputarr[4*row+col],"^") #OLD and EFFICIENT solution (INCOMPLETE because I am LAZY)
@@ -298,24 +298,24 @@ if __name__ == '__main__':
             sixteens+=1
             RSarr.append(rowshift(coolarr))
         county+=1
-    print("RS done!")
-    print(RSarr)
-    print("b4")
     RSarr = decompress(RSarr)
-    print("after",RSarr)
+    print("RS  :",RSarr)
 
     #columnwise mixing
     CSarr = []
-    county = 1
-    sixteens = 0
-    for i in range(1,len(RSarr)+1):
-        if (county == 16):
-            #temparr = colshift(RSarr[(sixteens*i):(i*sixteens+16)])
-            #print(RSarr[(sixteens*16+i):(i+sixteens*16)])
-            sixteens+=1
-            county = 0  # make sure its 0 because its about to go up to 1 in the next line
-        county+=1
-        CSarr.append(temparr)
+    print(len(RSarr))
+    for i in range(0,len(RSarr),16):
+        sendarr = RSarr[(i):(i+16)]
+        if (len(sendarr) == 16):
+            temparr = colshift(sendarr)
+            CSarr.append(temparr)
+        else:
+            print("nice try, bucko. Unfortunately for you,",sendarr,"just ain't cuttin' the bill!")
+            temparr = []
+        sixteens+=1
+    decompress(CSarr)
+    print("CSARR:",CSarr)
+
     # single byte based substitution
     # rowwise permutation
     # columnwise mixing
